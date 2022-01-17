@@ -60,7 +60,7 @@ pub mod decode;
 pub mod encode;
 
 /// Possible types of tags and they payload.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Tag {
     Byte(i8),
     Short(i16),
@@ -192,14 +192,14 @@ impl_from_for_ref!(CompoundTag, Compound);
 impl_from_for_ref!(Vec<i32>, IntArray);
 impl_from_for_ref!(Vec<i64>, LongArray);
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct CompoundTag {
     pub name: Option<String>,
     tags: LinkedHashMap<String, Tag>,
 }
 
 /// Possible types of errors while trying to get value from compound tag.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum CompoundTagError<'a> {
     /// Tag with provided name not found.
     TagNotFound {
@@ -323,7 +323,10 @@ impl CompoundTag {
         self.tags.insert(name.to_string(), tag.into());
     }
 
-    pub fn get<'a, 'b: 'a, T: TryFrom<&'a Tag>>(&'a self, name: &'b str) -> Result<T, CompoundTagError> {
+    pub fn get<'a, 'b: 'a, T: TryFrom<&'a Tag>>(
+        &'a self,
+        name: &'b str,
+    ) -> Result<T, CompoundTagError> {
         match self.tags.get(name) {
             Some(tag) => match tag.try_into() {
                 Ok(value) => Ok(value),
